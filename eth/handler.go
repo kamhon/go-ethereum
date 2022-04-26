@@ -109,6 +109,7 @@ type handler struct {
 	blockFetcher *fetcher.BlockFetcher
 	txFetcher    *fetcher.TxFetcher
 	peers        *peerSet
+	peersStats   *peerSetStats
 	merger       *consensus.Merger
 
 	eventMux      *event.TypeMux
@@ -144,6 +145,7 @@ func newHandler(config *handlerConfig) (*handler, error) {
 		peerRequiredBlocks: config.PeerRequiredBlocks,
 		quitSync:           make(chan struct{}),
 	}
+	h.peersStats = newPeerSetStats(h.peers)
 	if config.Sync == downloader.FullSync {
 		// The database seems empty as the current block is the genesis. Yet the snap
 		// block is ahead, so snap sync was enabled for this node at a certain point.
@@ -282,7 +284,7 @@ func newHandler(config *handlerConfig) (*handler, error) {
 		}
 		return n, err
 	}
-	h.blockFetcher = fetcher.NewBlockFetcher(false, nil, h.chain.GetBlockByHash, validator, h.BroadcastBlock, heighter, nil, inserter, h.removePeer)
+	h.blockFetcher = fetcher.NewBlockFetcher(false, nil, h.chain.GetBlockByHash, validator, h.BroadcastBlock, heighter, nil, inserter, h.removePeer, h.peersStats.UpdatePeerStats)
 
 	fetchTx := func(peer string, hashes []common.Hash) error {
 		p := h.peers.peer(peer)
@@ -573,6 +575,14 @@ func (h *handler) BroadcastBlock(block *types.Block, propagate bool) {
 	}
 	hash := block.Hash()
 	peers := h.peers.peersWithoutBlock(hash)
+
+	if propagate {
+		h.peersStats.ReportPeersWithoutBlock(peers)
+	}
+	// Print peers stats every 100 blocks
+	if block.NumberU64()%100 == 0 {
+		h.peersStats.LogStats()
+	}
 
 	// If propagation is requested, send to a subset of the peer
 	if propagate {
