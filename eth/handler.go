@@ -581,7 +581,7 @@ func (h *handler) BroadcastBlock(block *types.Block, propagate bool) {
 		h.peersStats.ReportPeersWithoutBlock(peers)
 	}
 
-	log.Info("blockNo:", strconv.FormatUint(block.NumberU64(), 10))
+	log.Info("new block:", "block", strconv.FormatUint(block.NumberU64(), 10))
 
 	// Print peers stats every 100 blocks
 	if block.NumberU64()%100 == 0 {

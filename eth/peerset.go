@@ -303,9 +303,13 @@ func (s *peerSetStats) LogStats() {
 
 	log.Info("Peers:")
 	for _, p := range s.ps.peers {
+		/*
 		log.Info("Peer: ", "id", p.Peer.ID(), "enode", p.Peer.Node().URLv4(),
 			"importedBlocksFrom", s.importedBlocksFrom[p.Peer.ID()],
 			"totalBroadcastsTo", s.totalBroadcastsTo[p.Peer.ID()],
 			"broadcastsToWithoutBlock", s.broadcastsToWithoutBlock[p.Peer.ID()])
+		*/
+		log.Info("Peer: ", "enode", p.Peer.Node().URLv4(),
+			"importedBlocksFrom", s.importedBlocksFrom[p.Peer.ID()])
 	}
 }
