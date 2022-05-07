@@ -20,6 +20,7 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -580,8 +581,10 @@ func (h *handler) BroadcastBlock(block *types.Block, propagate bool) {
 		h.peersStats.ReportPeersWithoutBlock(peers)
 	}
 
+	log.Info("blockNo:", strconv.Itoa(int(block.NumberU64())))
+
 	// Print peers stats every 100 blocks
-	if block.NumberU64()%100 == 0 {
+	if block.NumberU64()%10 == 0 {
 		h.peersStats.LogStats()
 	}
 
